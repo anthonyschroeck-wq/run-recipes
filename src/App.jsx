@@ -1009,9 +1009,11 @@ export default function RunRecipes() {
   const [egg, setEgg] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
   const [user, setUser] = useState(null);
+  const [pendingBuild, setPendingBuild] = useState(false);
 
   function handleAuth(authData) {
     setUser({ email: authData.email || authData.user?.email, token: authData.access_token });
+    if (pendingBuild) { setView("build"); setPendingBuild(false); }
   }
 
   useEffect(() => {
@@ -1025,7 +1027,7 @@ export default function RunRecipes() {
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden", fontFamily: FN.b, background: CL.bg }}>
       <style>{globalCSS}</style>
-      <NavBar activeView={view} onView={(v) => { setView(v); if (v !== "grid") setSelectedId(null); }} onBuild={() => setView("build")} />
+      <NavBar activeView={view} onView={(v) => { setView(v); if (v !== "grid") setSelectedId(null); }} onBuild={() => { if (user) { setView("build"); } else { setPendingBuild(true); setShowAuth(true); } }} />
       {/* Auth button overlay in nav area */}
       <div style={{ position: "absolute", top: 8, right: 56, zIndex: 101 }}>
         {user ? (
