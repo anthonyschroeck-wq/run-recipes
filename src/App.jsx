@@ -233,7 +233,7 @@ function HelpChat({ stepData, stepIndex }) {
 
 async function callAI(prompt, sys) {
   try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
+    const res = await fetch("/api/chat", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 1000, system: sys || "Creative witty chef. Valid JSON only. No markdown fences.", messages: [{ role: "user", content: prompt }] }),
     });
@@ -245,7 +245,7 @@ async function callAI(prompt, sys) {
 
 async function callAIText(prompt, sys) {
   try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
+    const res = await fetch("/api/chat", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 500, system: sys || "Helpful friendly chef. 2-3 sentences max.", messages: [{ role: "user", content: prompt }] }),
     });
