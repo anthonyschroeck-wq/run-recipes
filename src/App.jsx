@@ -79,6 +79,66 @@ const MODULES = [
   { id: "deploy", title: "Deploy to the Internet", icon: "🌐", desc: "Put your app on a public URL anyone can visit" },
 ];
 
+/* ─── MODULE LESSON CONTENT ─── */
+const MODULE_LESSONS = {
+  brand: {
+    concept: "Your app should feel like a product someone designed, not something an AI spit out. Brand is: a name, a color palette, typography, and a personality. It's the difference between 'generic dashboard' and 'Run Recipes'.",
+    seeIt: "Look at Run Recipes: navy (#1b2a4a) + teal (#00b894), Sora font for headings, DM Sans for body text. Every color, spacing, and icon was chosen intentionally. The DoorDash jokes? That's brand personality.",
+    steps: [
+      { title: "Pick a name", desc: "What's your app called? Make it memorable. Run Recipes > 'Recipe Manager'." },
+      { title: "Choose 2-3 colors", desc: "One dark (backgrounds/text), one accent (buttons/highlights), one optional secondary. Use coolors.co for palettes." },
+      { title: "Pick a mood", desc: "Professional? Playful? Minimal? Tell Claude: 'I want it to feel like [brand you admire] but for [your use case]'." },
+      { title: "Light or dark theme", desc: "Dark themes feel premium but are harder to get right. Start with light if unsure." },
+    ],
+    promptTemplate: "Update my app's aesthetic:\n- App name: [YOUR NAME]\n- Primary color: [HEX]\n- Accent color: [HEX]\n- Mood: [professional/playful/minimal/bold]\n- Theme: [light/dark]\n- Make the typography feel premium — use a distinctive display font for headings and a clean sans-serif for body text.\n- Add subtle touches that show personality (hover effects, micro-copy, empty states with character).",
+  },
+  mobile: {
+    concept: "More than half of web traffic is mobile. If your app only works on desktop, you've already lost most of your users. Responsive design means your layout adapts to any screen size.",
+    seeIt: "Try resizing your browser window on Run Recipes. Notice what breaks? That's what we're fixing. On mobile: sidebars collapse, tables become cards, modals go full-screen, hover tooltips become tap targets.",
+    steps: [
+      { title: "Think in breakpoints", desc: "Desktop (>1024px), Tablet (768-1024px), Mobile (<768px). Your layout should change at each." },
+      { title: "Stack, don't shrink", desc: "On mobile, things stack vertically. A 3-column desktop layout becomes 1 column on mobile." },
+      { title: "Touch targets", desc: "Buttons need to be at least 44x44px on mobile. Hover effects don't work — use tap/click instead." },
+      { title: "Test it", desc: "In Chrome: right-click → Inspect → click the phone icon (top-left). Test at iPhone SE (375px) and iPad (768px)." },
+    ],
+    promptTemplate: "Make my app fully mobile responsive:\n- Add a useMediaQuery hook that detects screen width\n- Desktop (>1024px): current layout\n- Tablet (768-1024px): collapse sidebar, stack panels\n- Mobile (<768px): bottom tab navigation, card-based layouts instead of tables, full-screen modals for detail views\n- Replace all hover tooltips with tap-to-toggle on mobile\n- Ensure all buttons are at least 44px touch targets\n- Test: everything should work at 375px width (iPhone SE)",
+  },
+  auth: {
+    concept: "Right now anyone who opens your app sees the same thing. Login/identity means each user gets their own space — their own data, their own settings, their own experience. It's what turns a demo into a product.",
+    seeIt: "In Run Recipes, notice the user avatar in the nav? That's Supabase auth. When you log in, your recipes, pantry, and progress are yours. Log out, log in on another device — everything's there.",
+    steps: [
+      { title: "Create a Supabase project", desc: "Go to supabase.com → New Project → Pick a name and password. Free tier is generous." },
+      { title: "Get your keys", desc: "In Supabase dashboard: Settings → API. Copy your Project URL and anon/public key." },
+      { title: "Add to Vercel", desc: "Vercel → Project Settings → Environment Variables. Add SUPABASE_URL and SUPABASE_ANON_KEY." },
+      { title: "Add auth to your app", desc: "Tell Claude to add a login/signup modal using your Supabase credentials." },
+    ],
+    promptTemplate: "Add authentication to my app using Supabase:\n- Add a login/signup modal with email + password\n- Show user email and a logout button in the nav bar when logged in\n- If not logged in, show a 'Sign In' button in the nav\n- Use fetch calls to /api/auth for all auth operations (signup, login, get_progress, save_progress)\n- Store the access_token in React state (not localStorage)\n- Protect features that need auth with a 'please log in' prompt\n- Make the auth UI clean and professional — not an afterthought",
+  },
+  data: {
+    concept: "Your app right now has amnesia. Close the tab, everything resets. Data persistence means saving user data to a database so it survives across sessions, devices, and time. Think of it as giving your app a memory.",
+    seeIt: "In Run Recipes, your pantry items and recipe edits persist because they're saved to Supabase. The pre-loaded recipes are seed data (same for everyone), but your changes are yours.",
+    steps: [
+      { title: "Design your tables", desc: "What data does your app need to save? Users, items, settings? Each becomes a table. Think of tables as spreadsheets." },
+      { title: "Create tables in Supabase", desc: "Supabase dashboard → SQL Editor → Write CREATE TABLE statements (Claude can generate these for you)." },
+      { title: "Add Row Level Security", desc: "RLS ensures users only see their own data. It's one line of SQL per table." },
+      { title: "Connect your app", desc: "Use fetch calls to Supabase's REST API to read and write data. Claude can wire this up." },
+    ],
+    promptTemplate: "Add data persistence to my app using Supabase:\n- Design the database tables I need for [describe your data]\n- Generate the SQL CREATE TABLE statements with appropriate types\n- Add Row Level Security so users only see their own data\n- Replace in-memory state with Supabase reads/writes\n- Keep pre-loaded sample data as defaults for new users\n- Add loading states while data fetches\n- Handle errors gracefully (show friendly messages, not crashes)\n- Generate the complete SQL I need to run in Supabase's SQL Editor",
+  },
+  deploy: {
+    concept: "Your app lives on your computer right now. Deployment puts it on the internet with a URL anyone can visit. It goes from 'look at my screen' to 'here's the link'. Vercel makes this nearly free and automatic.",
+    seeIt: "Run Recipes is deployed on Vercel right now — that's how you're using it. Every time we push code to GitHub, Vercel automatically rebuilds and redeploys in about 60 seconds.",
+    steps: [
+      { title: "Push to GitHub", desc: "git init → git add . → git commit -m 'initial' → create repo on github.com → git push. Your code is now in the cloud." },
+      { title: "Connect Vercel", desc: "vercel.com → Import Project → Select your GitHub repo. Vercel auto-detects Vite/React." },
+      { title: "Set environment variables", desc: "Any API keys or secrets go in Vercel's Environment Variables, not in your code." },
+      { title: "Deploy", desc: "Click Deploy. Wait 60 seconds. You get a live URL. Share it with anyone." },
+      { title: "Auto-deploy updates", desc: "Every git push automatically triggers a new deployment. Change code → push → live in 60 seconds." },
+    ],
+    promptTemplate: "Help me deploy my React app to Vercel:\n- Generate the git commands I need to push to GitHub\n- Walk me through connecting Vercel to my GitHub repo\n- List which environment variables I need to set\n- Explain how auto-deployment works\n- Show me how to set up a custom domain (optional)",
+  },
+};
+
 
 const globalCSS = `
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap');
@@ -201,7 +261,7 @@ function HelpChat({ context, phaseLabel }) {
 
 async function callAI(prompt, sys) {
   try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
+    const res = await fetch("/api/chat", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 1000, system: sys || "Creative witty chef. Valid JSON only. No markdown fences.", messages: [{ role: "user", content: prompt }] }),
     });
@@ -213,7 +273,7 @@ async function callAI(prompt, sys) {
 
 async function callAIText(prompt, sys) {
   try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
+    const res = await fetch("/api/chat", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 500, system: sys || "Helpful friendly chef. 2-3 sentences max.", messages: [{ role: "user", content: prompt }] }),
     });
@@ -743,25 +803,171 @@ function PhaseBuild({ challenge, solution, onNext, onBack }) {
   );
 }
 
-function PhaseModules({ onBack }) {
+/* ─── AUTH MODAL ─── */
+function AuthModal({ onClose, onAuth }) {
+  const [mode, setMode] = useState("login");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit() {
+    if (!email || !password) { setError("Email and password required"); return; }
+    setLoading(true); setError("");
+    try {
+      const res = await fetch("/api/auth", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: mode, email, password }),
+      });
+      const data = await res.json();
+      if (data.error) { setError(data.error); setLoading(false); return; }
+      onAuth({ email: data.email || email, access_token: data.access_token, user: data.user || { email } });
+      onClose();
+    } catch { setError("Connection failed. Try again."); }
+    setLoading(false);
+  }
+
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(0,0,0,.5)", display: "flex", alignItems: "center", justifyContent: "center" }} onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} style={{ background: CL.white, borderRadius: 16, padding: 32, width: 380, boxShadow: "0 12px 40px rgba(0,0,0,.15)" }}>
+        <h3 style={{ fontFamily: FN.d, fontSize: 20, fontWeight: 700, color: CL.navy, marginBottom: 4 }}>{mode === "login" ? "Welcome Back" : "Create Account"}</h3>
+        <p style={{ fontSize: 12, color: CL.textLt, marginBottom: 20 }}>{mode === "login" ? "Pick up where you left off" : "Save your progress across sessions"}</p>
+        {error && <div style={{ padding: "8px 12px", background: CL.redBg, borderRadius: 8, fontSize: 12, color: CL.red, marginBottom: 12 }}>{error}</div>}
+        <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" type="email" style={{ width: "100%", padding: "10px 14px", borderRadius: 8, border: "1px solid " + CL.border, fontSize: 13, fontFamily: FN.b, marginBottom: 10, outline: "none" }} />
+        <input value={password} onChange={e => setPassword(e.target.value)} placeholder="Password" type="password" onKeyDown={e => e.key === "Enter" && handleSubmit()} style={{ width: "100%", padding: "10px 14px", borderRadius: 8, border: "1px solid " + CL.border, fontSize: 13, fontFamily: FN.b, marginBottom: 16, outline: "none" }} />
+        <button onClick={handleSubmit} disabled={loading} style={{ width: "100%", padding: "10px", borderRadius: 8, background: CL.teal, color: "#fff", border: "none", fontSize: 14, fontWeight: 600, cursor: loading ? "wait" : "pointer", fontFamily: FN.b }}>{loading ? "..." : mode === "login" ? "Log In" : "Sign Up"}</button>
+        <div style={{ textAlign: "center", marginTop: 12, fontSize: 12, color: CL.textMd }}>
+          {mode === "login" ? "No account? " : "Already have one? "}
+          <span onClick={() => { setMode(mode === "login" ? "signup" : "login"); setError(""); }} style={{ color: CL.teal, cursor: "pointer", fontWeight: 600 }}>{mode === "login" ? "Sign up" : "Log in"}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── MODULE LESSON VIEW ─── */
+function ModuleLesson({ module, onBack, onComplete, isCompleted }) {
+  const lesson = MODULE_LESSONS[module.id];
+  const [copied, setCopied] = useState(false);
+  const [activeTab, setActiveTab] = useState("concept");
+
+  function copyPrompt() { navigator.clipboard?.writeText(lesson.promptTemplate); setCopied(true); setTimeout(() => setCopied(false), 2000); }
+
+  const tabs = [
+    { id: "concept", label: "📖 Concept" },
+    { id: "see", label: "👀 See It" },
+    { id: "steps", label: "🔨 Steps" },
+    { id: "prompt", label: "⚡ Build It" },
+  ];
+
+  return (
+    <div className="fu" style={{ maxWidth: 620, width: "100%", background: CL.white, borderRadius: 16, border: "1px solid " + CL.border, padding: 0, boxShadow: "0 4px 24px rgba(0,0,0,.06)", overflow: "hidden" }}>
+      {/* Header */}
+      <div style={{ padding: "20px 28px", borderBottom: "1px solid " + CL.border, background: CL.bg }}>
+        <button onClick={onBack} style={{ background: "none", border: "none", color: CL.textMd, fontSize: 12, cursor: "pointer", fontFamily: FN.b, marginBottom: 8 }}>← Back to Modules</button>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ fontSize: 28 }}>{module.icon}</div>
+          <div>
+            <h2 style={{ fontFamily: FN.d, fontSize: 20, fontWeight: 700, color: CL.navy }}>{module.title}</h2>
+            <p style={{ fontSize: 12, color: CL.textMd }}>{module.desc}</p>
+          </div>
+          {isCompleted && <div style={{ marginLeft: "auto", padding: "4px 12px", borderRadius: 6, background: CL.greenBg, color: CL.green, fontSize: 11, fontFamily: FN.m, fontWeight: 600 }}>COMPLETED ✓</div>}
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div style={{ display: "flex", borderBottom: "1px solid " + CL.border }}>
+        {tabs.map(t => (
+          <button key={t.id} onClick={() => setActiveTab(t.id)} style={{ flex: 1, padding: "10px 8px", background: "none", border: "none", borderBottom: activeTab === t.id ? "2px solid " + CL.teal : "2px solid transparent", color: activeTab === t.id ? CL.teal : CL.textMd, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FN.b }}>{t.label}</button>
+        ))}
+      </div>
+
+      {/* Tab Content */}
+      <div style={{ padding: "24px 28px", minHeight: 280 }}>
+        {activeTab === "concept" && (
+          <div style={{ fontSize: 14, lineHeight: 1.8, color: CL.textMd }}><JargonText text={lesson.concept} /></div>
+        )}
+        {activeTab === "see" && (
+          <div style={{ fontSize: 14, lineHeight: 1.8, color: CL.textMd }}><JargonText text={lesson.seeIt} /></div>
+        )}
+        {activeTab === "steps" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {lesson.steps.map((s, i) => (
+              <div key={i} style={{ display: "flex", gap: 12, padding: "12px 16px", background: CL.bg, borderRadius: 10 }}>
+                <div style={{ width: 28, height: 28, borderRadius: "50%", background: CL.teal, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, fontFamily: FN.m, flexShrink: 0 }}>{i + 1}</div>
+                <div><div style={{ fontWeight: 600, fontSize: 13, color: CL.navy, marginBottom: 2 }}>{s.title}</div><div style={{ fontSize: 12, color: CL.textMd, lineHeight: 1.5 }}><JargonText text={s.desc} /></div></div>
+              </div>
+            ))}
+          </div>
+        )}
+        {activeTab === "prompt" && (
+          <div>
+            <p style={{ fontSize: 13, color: CL.textMd, marginBottom: 16, lineHeight: 1.6 }}><JargonText text="Copy this prompt template, customize the bracketed sections, and paste it into Claude. It will add this capability to your app." /></p>
+            <div style={{ background: CL.bg, borderRadius: 10, border: "1px solid " + CL.border, padding: 16, fontSize: 12, fontFamily: FN.m, lineHeight: 1.7, color: CL.textMd, whiteSpace: "pre-wrap", marginBottom: 16, maxHeight: 220, overflow: "auto" }}>{lesson.promptTemplate}</div>
+            <button onClick={copyPrompt} style={{ padding: "10px 24px", borderRadius: 8, background: copied ? CL.green : CL.teal, color: "#fff", border: "none", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: FN.b }}>{copied ? "✓ Copied!" : "📋 Copy Prompt"}</button>
+          </div>
+        )}
+      </div>
+
+      {/* Footer */}
+      <div style={{ padding: "16px 28px", borderTop: "1px solid " + CL.border, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <HelpChat context={"User is learning about " + module.title + ". Help with concepts, implementation, and troubleshooting."} phaseLabel={module.title} />
+        {!isCompleted && <button onClick={onComplete} style={{ padding: "8px 20px", borderRadius: 8, background: CL.green, color: "#fff", border: "none", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: FN.b }}>✓ Mark Complete</button>}
+      </div>
+    </div>
+  );
+}
+
+function PhaseModules({ onBack, completedModules, onCompleteModule }) {
+  const [activeModule, setActiveModule] = useState(null);
+
+  if (activeModule) {
+    const mod = MODULES.find(m => m.id === activeModule);
+    return (
+      <ModuleLesson
+        module={mod}
+        onBack={() => setActiveModule(null)}
+        onComplete={() => { onCompleteModule(activeModule); setActiveModule(null); }}
+        isCompleted={completedModules.includes(activeModule)}
+      />
+    );
+  }
+
+  const completedCount = completedModules.length;
+  const totalCount = MODULES.length;
+
   return (
     <div className="fu" style={{ maxWidth: 600, width: "100%", background: CL.white, borderRadius: 16, border: "1px solid " + CL.border, padding: 40, boxShadow: "0 4px 24px rgba(0,0,0,.06)" }}>
       <div style={{ fontSize: 40, marginBottom: 12 }}>🎓</div>
       <h2 style={{ fontFamily: FN.d, fontSize: 22, fontWeight: 700, color: CL.navy, marginBottom: 6 }}>Level Up Your App</h2>
-      <p style={{ fontSize: 13, color: CL.textMd, marginBottom: 24, lineHeight: 1.6 }}>You have a working v1. Now let's make it production-grade. Each module teaches a concept and adds a real capability.</p>
-      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 24 }}>
-        {MODULES.map(m => (
-          <div key={m.id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 18px", background: CL.bg, borderRadius: 10, border: "1px solid " + CL.border }}>
-            <div style={{ width: 28, height: 28, borderRadius: 8, background: CL.white, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, flexShrink: 0 }}>{m.icon}</div>
-            <div style={{ flex: 1 }}><div style={{ fontWeight: 600, fontSize: 14, color: CL.navy, fontFamily: FN.d }}>{m.title}</div><div style={{ fontSize: 12, color: CL.textMd, lineHeight: 1.4, marginTop: 2 }}>{m.desc}</div></div>
-            <div style={{ padding: "4px 10px", borderRadius: 6, background: CL.yellowBg, color: CL.yellow, fontSize: 10, fontFamily: FN.m, fontWeight: 600, flexShrink: 0 }}>COMING SOON</div>
-          </div>
-        ))}
+      <p style={{ fontSize: 13, color: CL.textMd, marginBottom: 8, lineHeight: 1.6 }}>You have a working v1. Each module teaches a concept and adds a real capability.</p>
+      {completedCount > 0 && <div style={{ fontSize: 12, color: CL.teal, fontFamily: FN.m, fontWeight: 600, marginBottom: 16 }}>{completedCount}/{totalCount} modules completed</div>}
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 24 }}>
+        {MODULES.map(m => {
+          const done = completedModules.includes(m.id);
+          return (
+            <div key={m.id} onClick={() => setActiveModule(m.id)} style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 18px", background: done ? CL.greenBg : CL.bg, borderRadius: 10, border: "1px solid " + (done ? CL.green + "40" : CL.border), cursor: "pointer", transition: "all 0.2s" }}
+              onMouseEnter={e => { if (!done) e.currentTarget.style.borderColor = CL.teal; }}
+              onMouseLeave={e => { if (!done) e.currentTarget.style.borderColor = CL.border; }}>
+              <div style={{ width: 28, height: 28, borderRadius: 8, background: CL.white, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, flexShrink: 0 }}>{m.icon}</div>
+              <div style={{ flex: 1 }}><div style={{ fontWeight: 600, fontSize: 14, color: CL.navy, fontFamily: FN.d }}>{m.title}</div><div style={{ fontSize: 12, color: CL.textMd, lineHeight: 1.4, marginTop: 2 }}>{m.desc}</div></div>
+              {done
+                ? <div style={{ padding: "4px 10px", borderRadius: 6, background: CL.green, color: "#fff", fontSize: 10, fontFamily: FN.m, fontWeight: 600, flexShrink: 0 }}>DONE ✓</div>
+                : <div style={{ padding: "4px 10px", borderRadius: 6, background: CL.tealBg, color: CL.teal, fontSize: 10, fontFamily: FN.m, fontWeight: 600, flexShrink: 0 }}>START →</div>
+              }
+            </div>
+          );
+        })}
       </div>
-      <div style={{ background: CL.greenBg, borderRadius: 10, padding: "16px 20px", marginBottom: 20, border: "1px solid " + CL.green + "30" }}>
-        <div style={{ fontSize: 14, fontWeight: 600, color: CL.green, marginBottom: 4, fontFamily: FN.d }}>🎉 You Did It</div>
-        <div style={{ fontSize: 13, color: CL.text, lineHeight: 1.6 }}>You went from a business challenge to a working app with AI. The same workflow works for any tool you can imagine. Keep building.</div>
-      </div>
+
+      {completedCount === totalCount && (
+        <div style={{ background: CL.greenBg, borderRadius: 10, padding: "16px 20px", marginBottom: 20, border: "1px solid " + CL.green + "30" }}>
+          <div style={{ fontSize: 14, fontWeight: 600, color: CL.green, marginBottom: 4, fontFamily: FN.d }}>🎉 All Modules Complete!</div>
+          <div style={{ fontSize: 13, color: CL.text, lineHeight: 1.6 }}>You've mastered every concept. You're not just building with AI — you're building like a developer. Keep shipping.</div>
+        </div>
+      )}
+
       <button onClick={onBack} style={{ padding: "10px 24px", borderRadius: 10, border: "1px solid " + CL.border, background: "none", color: CL.textMd, fontSize: 14, cursor: "pointer", fontFamily: FN.b }}>← Back to Run Recipes</button>
     </div>
   );
@@ -771,13 +977,14 @@ function OnboardingView({ onBack }) {
   const [phase, setPhase] = useState("welcome");
   const [challengeData, setChallengeData] = useState(null);
   const [solutionData, setSolutionData] = useState("");
+  const [completedModules, setCompletedModules] = useState([]);
   function handleChallengeNext(challenge, solution) { setChallengeData(challenge); setSolutionData(solution); setPhase("build"); }
+  function handleCompleteModule(id) { setCompletedModules(prev => prev.includes(id) ? prev : [...prev, id]); }
   const phases = ["welcome", "tools", "challenge", "build", "modules"];
   const phaseIndex = phases.indexOf(phase);
 
   return (
     <div style={{ flex: 1, overflow: "auto", background: CL.bg, display: "flex", flexDirection: "column" }}>
-      {/* Progress bar */}
       <div style={{ display: "flex", gap: 6, padding: "12px 32px", justifyContent: "center" }}>
         {phases.map((p, i) => <div key={p} style={{ width: i <= phaseIndex ? 24 : 10, height: 6, borderRadius: 3, background: i <= phaseIndex ? CL.teal : CL.border, transition: "all 0.3s" }} />)}
       </div>
@@ -786,7 +993,7 @@ function OnboardingView({ onBack }) {
         {phase === "tools" && <PhaseTools onNext={() => setPhase("challenge")} onBack={() => setPhase("welcome")} />}
         {phase === "challenge" && <PhaseChallenge onNext={handleChallengeNext} onBack={() => setPhase("tools")} />}
         {phase === "build" && <PhaseBuild challenge={challengeData} solution={solutionData} onNext={() => setPhase("modules")} onBack={() => setPhase("challenge")} />}
-        {phase === "modules" && <PhaseModules onBack={onBack} />}
+        {phase === "modules" && <PhaseModules onBack={onBack} completedModules={completedModules} onCompleteModule={handleCompleteModule} />}
       </div>
     </div>
   );
@@ -800,6 +1007,12 @@ export default function RunRecipes() {
   const [activeFolder, setActiveFolder] = useState("All Meals");
   const [pantry, setPantry] = useState(INIT_PANTRY);
   const [egg, setEgg] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
+  const [user, setUser] = useState(null);
+
+  function handleAuth(authData) {
+    setUser({ email: authData.email || authData.user?.email, token: authData.access_token });
+  }
 
   useEffect(() => {
     function handler(e) { if (e.ctrlKey && e.shiftKey && e.key === "B") { e.preventDefault(); setEgg(true); } }
@@ -813,6 +1026,17 @@ export default function RunRecipes() {
     <div style={{ display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden", fontFamily: FN.b, background: CL.bg }}>
       <style>{globalCSS}</style>
       <NavBar activeView={view} onView={(v) => { setView(v); if (v !== "grid") setSelectedId(null); }} onBuild={() => setView("build")} />
+      {/* Auth button overlay in nav area */}
+      <div style={{ position: "absolute", top: 8, right: 56, zIndex: 101 }}>
+        {user ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ width: 26, height: 26, borderRadius: "50%", background: CL.teal, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, fontFamily: FN.d }}>{user.email[0].toUpperCase()}</div>
+            <button onClick={() => setUser(null)} style={{ background: "none", border: "none", color: CL.textLt, fontSize: 11, cursor: "pointer", fontFamily: FN.b }}>Log out</button>
+          </div>
+        ) : (
+          <button onClick={() => setShowAuth(true)} style={{ padding: "4px 12px", borderRadius: 6, border: "1px solid " + CL.border, background: CL.white, color: CL.textMd, fontSize: 11, cursor: "pointer", fontFamily: FN.b }}>Sign In</button>
+        )}
+      </div>
       {view === "grid" && <FilterBar meals={MEALS} filterChef={filterChef} onFilterChef={setFilterChef} />}
       <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
         {view === "grid" && (
@@ -836,6 +1060,7 @@ export default function RunRecipes() {
           </div>
         </div>
       )}
+      {showAuth && <AuthModal onClose={() => setShowAuth(false)} onAuth={handleAuth} />}
     </div>
   );
 }
