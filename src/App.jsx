@@ -676,8 +676,7 @@ function PhaseWelcome({ onNext, onBack }) {
   );
 }
 
-function PhaseTools({ onNext, onBack }) {
-  const [checked, setChecked] = useState({});
+function PhaseTools({ onNext, onBack, checked, onCheckedChange }) {
   const allChecked = TOOLS.every(t => checked[t.id]);
   return (
     <div className="fu" style={{ maxWidth: 560, width: "100%", background: CL.white, borderRadius: 16, border: "1px solid " + CL.border, padding: 40, boxShadow: "0 4px 24px rgba(0,0,0,.06)" }}>
@@ -687,7 +686,7 @@ function PhaseTools({ onNext, onBack }) {
       <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 }}>
         {TOOLS.map(t => (
           <div key={t.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", background: checked[t.id] ? CL.greenBg : CL.bg, borderRadius: 10, border: "1px solid " + (checked[t.id] ? CL.green + "40" : CL.border), transition: "all 0.2s" }}>
-            <div onClick={() => setChecked(p => ({ ...p, [t.id]: !p[t.id] }))} style={{ width: 22, height: 22, borderRadius: 6, border: "2px solid " + (checked[t.id] ? CL.green : CL.borderDk), background: checked[t.id] ? CL.green : "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, color: "#fff", fontSize: 12, fontWeight: 700 }}>{checked[t.id] ? "✓" : ""}</div>
+            <div onClick={() => onCheckedChange(p => ({ ...p, [t.id]: !p[t.id] }))} style={{ width: 22, height: 22, borderRadius: 6, border: "2px solid " + (checked[t.id] ? CL.green : CL.borderDk), background: checked[t.id] ? CL.green : "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, color: "#fff", fontSize: 12, fontWeight: 700 }}>{checked[t.id] ? "✓" : ""}</div>
             <span style={{ fontSize: 20 }}>{t.icon}</span>
             <div style={{ flex: 1 }}><div style={{ fontWeight: 600, fontSize: 13, color: CL.navy }}>{t.name}</div><div style={{ fontSize: 11, color: CL.textMd, lineHeight: 1.4 }}><JargonText text={t.desc} /></div></div>
             <a href={t.link} target="_blank" rel="noopener noreferrer" style={{ padding: "4px 12px", borderRadius: 6, background: CL.white, color: CL.blue, fontSize: 11, fontWeight: 500, textDecoration: "none", border: "1px solid " + CL.border, flexShrink: 0 }}>Get →</a>
@@ -973,15 +972,51 @@ function PhaseModules({ onBack, completedModules, onCompleteModule }) {
   );
 }
 
-function OnboardingView({ onBack }) {
+function OnboardingView({ onBack, user }) {
   const [phase, setPhase] = useState("welcome");
+  const [toolsChecked, setToolsChecked] = useState({});
   const [challengeData, setChallengeData] = useState(null);
   const [solutionData, setSolutionData] = useState("");
   const [completedModules, setCompletedModules] = useState([]);
+  const [loaded, setLoaded] = useState(false);
+
+  // Load progress from Supabase on mount
+  useEffect(() => {
+    if (!user?.token) { setLoaded(true); return; }
+    fetch("/api/auth", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "get_progress", access_token: user.token }) })
+      .then(r => r.json())
+      .then(data => {
+        if (data && !data.error) {
+          if (data.phase) setPhase(data.phase);
+          if (data.tools_checked) setToolsChecked(typeof data.tools_checked === "string" ? JSON.parse(data.tools_checked) : data.tools_checked);
+          if (data.challenge) setChallengeData(typeof data.challenge === "string" ? JSON.parse(data.challenge) : data.challenge);
+          if (data.solution) setSolutionData(data.solution);
+          if (data.modules_completed) setCompletedModules(typeof data.modules_completed === "string" ? JSON.parse(data.modules_completed) : data.modules_completed);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoaded(true));
+  }, [user?.token]);
+
+  // Save progress to Supabase on changes (debounced)
+  const saveRef = useRef(null);
+  useEffect(() => {
+    if (!loaded || !user?.token) return;
+    clearTimeout(saveRef.current);
+    saveRef.current = setTimeout(() => {
+      fetch("/api/auth", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({
+        action: "save_progress", access_token: user.token,
+        phase, tools_checked: toolsChecked, challenge: challengeData, solution: solutionData, modules_completed: completedModules
+      }) }).catch(() => {});
+    }, 800);
+  }, [phase, toolsChecked, challengeData, solutionData, completedModules, loaded, user?.token]);
+
   function handleChallengeNext(challenge, solution) { setChallengeData(challenge); setSolutionData(solution); setPhase("build"); }
   function handleCompleteModule(id) { setCompletedModules(prev => prev.includes(id) ? prev : [...prev, id]); }
   const phases = ["welcome", "tools", "challenge", "build", "modules"];
   const phaseIndex = phases.indexOf(phase);
+
+  if (!loaded) return <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: CL.textLt, fontFamily: FN.b }}>Loading your progress...</div>;
 
   return (
     <div style={{ flex: 1, overflow: "auto", background: CL.bg, display: "flex", flexDirection: "column" }}>
@@ -990,7 +1025,7 @@ function OnboardingView({ onBack }) {
       </div>
       <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 32px 32px" }}>
         {phase === "welcome" && <PhaseWelcome onNext={() => setPhase("tools")} onBack={onBack} />}
-        {phase === "tools" && <PhaseTools onNext={() => setPhase("challenge")} onBack={() => setPhase("welcome")} />}
+        {phase === "tools" && <PhaseTools onNext={() => setPhase("challenge")} onBack={() => setPhase("welcome")} checked={toolsChecked} onCheckedChange={setToolsChecked} />}
         {phase === "challenge" && <PhaseChallenge onNext={handleChallengeNext} onBack={() => setPhase("tools")} />}
         {phase === "build" && <PhaseBuild challenge={challengeData} solution={solutionData} onNext={() => setPhase("modules")} onBack={() => setPhase("challenge")} />}
         {phase === "modules" && <PhaseModules onBack={onBack} completedModules={completedModules} onCompleteModule={handleCompleteModule} />}
@@ -1050,7 +1085,8 @@ export default function RunRecipes() {
         )}
         {view === "pantry" && <PantryView pantry={pantry} onAdd={(i) => setPantry((p) => (p.includes(i) ? p : [...p, i]))} onRemove={(i) => setPantry((p) => p.filter((x) => x !== i))} onClear={() => setPantry([])} />}
         {view === "grocery" && <GroceryView meals={MEALS} pantry={pantry} />}
-        {view === "build" && <OnboardingView onBack={() => setView("grid")} />}
+        {view === "build" && !user && (() => { if (!showAuth) { setShowAuth(true); setView("grid"); setPendingBuild(true); } return null; })()}
+        {view === "build" && user && <OnboardingView onBack={() => setView("grid")} user={user} />}
       </div>
       {egg && (
         <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(0,0,0,.5)", display: "flex", alignItems: "center", justifyContent: "center" }} onClick={() => setEgg(false)}>
